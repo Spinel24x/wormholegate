@@ -1,24 +1,38 @@
 FROM ubuntu:22.04
 
-# Install system dependencies
+# نصب پیش‌نیازها
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
+    openvpn \
+    easy-rsa \
+    iptables \
     curl \
     wget \
     net-tools \
     iproute2 \
-    iptables \
+    procps \
+    nano \
+    ufw \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy setup script
-COPY setup_openvpn.py /app/setup_openvpn.py
+# ساخت دایرکتوری‌های مورد نیاز
+RUN mkdir -p /etc/openvpn/easy-rsa
+RUN mkdir -p /etc/openvpn/clients
+RUN mkdir -p /app
 
-# Make script executable
-RUN chmod +x /app/setup_openvpn.py
+# کپی فایل‌های تنظیمات
+COPY start.sh /app/start.sh
+COPY setup.sh /app/setup.sh
 
-# Expose port (Render will override this with PORT env variable)
-EXPOSE 10000
+RUN chmod +x /app/*.sh
 
-# Run setup script
-CMD ["python3", "/app/setup_openvpn.py"]
+# پورت‌های OpenVPN (TCP و UDP)
+# Fly.io فقط از این پورت‌ها پشتیبانی می‌کنه
+EXPOSE 443/tcp
+EXPOSE 443/udp
+EXPOSE 80/tcp
+EXPOSE 8080/tcp
+
+WORKDIR /app
+
+# استارت اسکریپت
+CMD ["/app/start.sh"]
