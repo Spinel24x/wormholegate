@@ -1,0 +1,31 @@
+app = "openvpn-server"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 443
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
+[mounts]
+  source = "openvpn_data"
+  destination = "/etc/openvpn"
